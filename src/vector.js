@@ -82,7 +82,7 @@ class Vector {
                     s.scale(1, -1, 1);
                 }
                 if (vv.transform) {
-                    s.applyMatrix(this.space.transform);
+                    s.applyMatrix(vv.transform);
                 }
                 s.text(str, 0, 0);
             s.pop();
