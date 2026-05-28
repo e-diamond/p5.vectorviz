@@ -5,10 +5,10 @@ import { Axes } from "./axes.js";
 class VectorViz {
 
     static insts = new WeakSet();
-    static init(dimension='3D', parity='RIGHT', matrix=null, sketch=p5.instance) {
+    static init(dimension='3D', parity='RIGHT', sketch=p5.instance) {
         let vv;
         try {
-            vv = new VectorViz(dimension, parity, matrix, sketch);
+            vv = new VectorViz(dimension, parity, sketch);
             this.insts.add(vv);
         } catch (error) {
             throw error;
