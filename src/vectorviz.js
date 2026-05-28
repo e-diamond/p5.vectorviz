@@ -22,10 +22,9 @@ class VectorViz {
      * Create a vector space to draw new vectors into.
      * @param {string} [dimension=3D] - the dimension of the space (either 2D or 3D)
      * @param {string} [parity=RIGHT] - the handedness of the coordinate system (either LEFT or RIGHT)
-     * @param {null|number[]} [matrix=null] - transformation matrix to apply 
      * @param {p5} [sketch=p5.instance] - the p5 instance. Defaults to the global instance
      */
-    constructor(dimension='3D', parity='RIGHT', matrix=null, sketch=p5.instance) {
+    constructor(dimension='3D', parity='RIGHT', sketch=p5.instance) {
         
         // set dimension to 2D OR 3D 
         if (VectorViz.dimensions.includes(dimension)) {
@@ -41,30 +40,15 @@ class VectorViz {
             throw new Error(`Invalid argument: 'parity' must be one of the values ${VectorViz.parity}`);
         }
 
-        // apply transformation matrix 
-        if (matrix) {
-            if (Array.isArray(matrix)) {
-                if ((dimension === '2D' && matrix.length == 6) || (dimension === '3D' && matrix.length == 16)) {
-                    matrix.forEach(element => {
-                        if (typeof element !== 'number') {
-                            throw new TypeError(`Invalid Argument: transformation matrix must contain only number values`);
-                        }
-                    });
-                    this.transform = matrix;
-                } else {
-                    throw new RangeError(`Transformation matrix should contain 6 elements for a 2D space or 16 elements for a 3D space`)
-                }
-            } else {
-                throw new TypeError(`Invalid argument: transformation matrix must be of type Array`);
-            }
-        }
-
         // check for a p5 instance 
         if (sketch instanceof p5) {
             this.s = sketch;
         } else {
             throw new TypeError(`Invalid argument: sketch must be instance of p5`);
         }
+
+        // holds array to be used in p5 applyMatrix
+        this.transform;
 
         // initialize set to hold vectors 
         this.vectors = new WeakSet();
@@ -86,6 +70,44 @@ class VectorViz {
         if (this.transform) {
             this.s.applyMatrix(this.transform);
         }
+    }
+
+    /**
+     * Applies a transformation matrix
+     * and saves so can be used by other methods
+     * @param {p5.Matrix|number[]} matrix - the transformation matrix to be applied
+     */
+    applyMatrix(matrix) {
+        // p5.Matrix
+        if (matrix instanceof p5.Matrix) {
+            let arr;
+            // if 3x3 matrix
+            if (arr = matrix.mat3) {
+                this.transform = [];
+                for (let i = 0; i < arr.length; i++) {
+                    if (i % 3 !== 2) {
+                        this.transform.push(arr[i]);
+                    } 
+                }
+            // if 4x4 matrix
+            } else if (arr = matrix.mat4) {
+                this.transform = arr;
+            } else {
+                throw new Error(`matrix must be of size 3x3 or 4x4`);
+            }
+        // Array
+        } else if (Array.isArray(matrix)) {
+            let valid_lengths = [6, 9, 16];
+            if (valid_lengths.includes(matrix.length)) {
+                this.transform = matrix;
+            } else {
+                throw new Error(`matrix must be of length 6, 9, or 16`);
+            }
+        } else {
+            throw new TypeError(`Invalid argument: matrix must be p5.Matrix or Array`);
+        }
+        // apply matrix
+        this.s.applyMatrix(this.transform);
     }
 
     /** Creates a new vector object within the vector space.
