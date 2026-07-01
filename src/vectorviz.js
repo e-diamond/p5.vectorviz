@@ -67,9 +67,6 @@ class VectorViz {
         if (this.parity === 'RIGHT') {
             this.s.scale(1, -1, 1);
         }
-        if (this.transform) {
-            this.s.applyMatrix(this.transform);
-        }
     }
 
     /**
